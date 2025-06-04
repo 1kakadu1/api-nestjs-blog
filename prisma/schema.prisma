@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model PostModel {
+  id        Int          @id @default(autoincrement())
+  title      String
+  description String
+  smallDescription String @map("short_description")
+  slug String
+  updatedAt     DateTime? @updatedAt
+  createdAt     DateTime?    @default(now())
+  tags TagOnPost[]
+  seo SeoModel @relation(fields: [seoId], references: [id])
+  seoId Int @unique
+  images PostImage[]
+  isPublished Boolean @default(false)
+  categorys CategoryOnPost[]
+  @@unique([id, slug])
+  @@map("posts")
+}
+
+model CategoryModel {
+  id        Int          @id @default(autoincrement())
+  slug String
+  name String
+  preview String?
+  @@unique([id, slug])
+  CategoryOnPost CategoryOnPost[]
+}
+model TagPostModel {
+  id        Int          @id @default(autoincrement())
+  slug String
+  name String
+  updatedAt     DateTime? @updatedAt
+  createdAt     DateTime?    @default(now())
+  posts TagOnPost[]
+  @@unique([id, slug])
+  @@map("tags_post")
+}
+
+model PostImage{
+  id  Int @id @default(autoincrement())
+  url String
+  alt String? @default("")
+
+  posts PostModel[]
+}
+
+
+model SeoModel{
+  id  Int @id @default(autoincrement())
+  keywords String
+  title String
+  description String
+  robots String
+  post PostModel?
+}
+
+model TagOnPost { 
+  post PostModel @relation(fields: [postId], references: [id])
+  postId Int 
+  tag  TagPostModel     @relation(fields: [tagId], references: [id])
+  tagId   Int
+  @@id([postId, tagId]) 
+}
+
+model CategoryOnPost { 
+  post PostModel @relation(fields: [postId], references: [id])
+  postId Int 
+  category  CategoryModel     @relation(fields: [categoryId], references: [id])
+  categoryId   Int
+  @@id([postId, categoryId]) 
+}
+
