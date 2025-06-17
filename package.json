@@ -18,8 +18,10 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "db:cl:gen": "npx prisma generate",
     "db:migrate": "npx prisma migrate dev --name init",
     "db:seed": "npx prisma db seed",
+    "db:init": "npm run db:cl:gen && npm run db:migrate",
     "db:studio": "npx prisma studio",
     "db:copy": "cp -rv prisma/dev.db ./dist/prisma/",
     "copy-assets": "cp -rv public dist/public/"

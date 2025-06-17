@@ -15,9 +15,16 @@ export class PostsService {
             omit:{
                 seoId: true,
                 updatedAt: true,
-                id: true
+                id: true,
+                authorId: true,
             },
             include: {
+                author:{
+                    select:{
+                        avatar: true,
+                        name: true
+                    }
+                },
                 images:{
                     select:{
                         url: true,
@@ -48,12 +55,11 @@ export class PostsService {
             },
         });
 
-        if (post === null || post === undefined) {
+        if (!Boolean(post)) {
             throw new NotFoundException('404. Services not found');
         }
 
-        const post_data = JSON.parse(JSON.stringify(post));
-        return post_data;
+        return post;
 
     }
 }

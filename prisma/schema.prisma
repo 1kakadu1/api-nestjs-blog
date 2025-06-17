@@ -7,6 +7,39 @@ datasource db {
   url      = "file:./dev.db"
 }
 
+model BannerModel{
+  id        Int          @id @default(autoincrement())
+  preview String
+  title String?
+  description String?
+  post   PostModel? @relation(fields: [postId], references: [id])
+  postId Int?
+  bannerFilters BannerFiltersModel[]
+  @@map("banners")
+}
+
+model BannerFiltersModel{
+  id  Int @id @default(autoincrement())
+  value String
+  label String
+  banners BannerModel[]
+  @@index([value])
+  @@map("banner_filters")
+}
+
+model UserModel{
+  id  Int @id @default(autoincrement())
+  name String
+  email String 
+  password String
+  avatar String?
+  posts PostModel[]
+  //@@unique([email])
+  @@index([email])
+  @@map("users")
+}
+
+
 model PostModel {
   id        Int          @id @default(autoincrement())
   title      String
@@ -20,7 +53,12 @@ model PostModel {
   seoId Int @unique
   images PostImage[]
   isPublished Boolean @default(false)
+  isPopular Boolean @default(false)
   categorys CategoryOnPost[]
+  author   UserModel @relation(fields: [authorId], references: [id])
+  authorId Int
+  banners BannerModel[]
+  @@index([slug, title, id])
   @@unique([id, slug])
   @@map("posts")
 }
@@ -30,9 +68,11 @@ model CategoryModel {
   slug String
   name String
   preview String?
+  isDefault Boolean @default(false)
   @@unique([id, slug])
   CategoryOnPost CategoryOnPost[]
 }
+
 model TagPostModel {
   id        Int          @id @default(autoincrement())
   slug String
