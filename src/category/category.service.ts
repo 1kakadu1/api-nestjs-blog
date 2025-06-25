@@ -1,23 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { CategoryModel, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { DataBaseService } from 'src/database/database.service';
 import { TCategoryDtoResponse } from './interface/category.interface';
 
 @Injectable()
 export class CategoryService {
   constructor(private prisma: DataBaseService) {}
-  async getList<
-    // T extends Prisma.CategoryModelFindManyArgs,
-    N extends Prisma.CategoryModelFindManyArgs,
-  >(
-    //args?: Prisma.SelectSubset<T, Prisma.CategoryModelFindManyArgs>,
+  async getList<N extends Prisma.CategoryModelFindManyArgs>(
+    filters?: { limit?: number; offset?: number },
     argsTotal?: Prisma.SelectSubset<N, Prisma.CategoryModelFindManyArgs>,
   ): Promise<{ data: TCategoryDtoResponse[]; total: number }> {
-    // const argsDef = args
-    //   ? args
-    //   : ({
-    //      ,
-    //     } as Prisma.CategoryModelFindManyArgs);
     const argsTotalDef = argsTotal ? argsTotal : {};
     const category = await this.prisma.categoryModel.findMany({
       select: {
@@ -25,8 +17,14 @@ export class CategoryService {
         name: true,
         slug: true,
       },
+      skip: filters?.offset,
+      take: filters?.limit,
     });
-    const total = await this.prisma.categoryModel.count({ ...argsTotalDef });
+    const total = await this.prisma.categoryModel.count({
+      ...argsTotalDef,
+      skip: filters?.offset,
+      take: filters?.limit,
+    });
 
     return {
       data: category,
