@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import { tagsData } from './tags';
 import { categorysData } from './categorys';
 import { usersData } from './users';
+import { commentsData } from './comments';
 
 const MOCK_HTML = `
             <h1>

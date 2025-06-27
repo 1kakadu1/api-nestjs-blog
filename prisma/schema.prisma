@@ -27,6 +27,30 @@ model BannerFiltersModel{
   @@map("banner_filters")
 }
 
+model CommentModel{
+  id        Int          @id @default(autoincrement())
+  content String
+  updatedAt     DateTime? @updatedAt
+  createdAt     DateTime?    @default(now())
+  deleted   Boolean  @default(false)
+
+  parent     CommentModel? @relation("CommentHierarchy", fields: [parentId], references: [id])
+  children   CommentModel[] @relation("CommentHierarchy")
+  parentId   Int?  @map("parent_id")
+
+  postId Int
+  post   PostModel     @relation(fields: [postId], references: [id])
+
+  authorId Int
+  author   UserModel     @relation(fields: [authorId], references: [id])
+
+  //@@index([parentId])
+  @@index([authorId])
+  @@index([postId])
+
+  @@map("comments")
+}
+
 model UserModel{
   id  Int @id @default(autoincrement())
   name String
@@ -34,6 +58,7 @@ model UserModel{
   password String
   avatar String?
   posts PostModel[]
+  comments CommentModel[]
   //@@unique([email])
   @@index([email])
   @@map("users")
@@ -58,6 +83,7 @@ model PostModel {
   author   UserModel @relation(fields: [authorId], references: [id])
   authorId Int
   banners BannerModel[]
+  comments CommentModel[]
   @@index([slug, title, id])
   @@unique([id, slug])
   @@map("posts")

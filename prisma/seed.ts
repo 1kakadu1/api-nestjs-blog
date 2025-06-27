@@ -9,6 +9,7 @@ import {
   tagsOnPostRefs,
   usersData,
 } from './data';
+import { commentChildrenData, commentsData } from './data/comments';
 
 const prisma = new PrismaClient();
 
@@ -142,6 +143,37 @@ async function main() {
   }
   console.log(`!!! Created banners !!!`);
   // END create data banners
+  // START create data post comments
+  const post  = await prisma.postModel.findFirst({where: {slug: "hellow-nestjs"}});
+  const user = users[0];
+  const userSecond = users[1];
+
+  if(post && user && userSecond){
+    const comments: any[] = [];
+    for (const u of commentsData) {
+      const newComment = await prisma.commentModel.create({
+        data: {
+          content: u.content,
+          authorId: user.id, 
+              postId: post.id,
+          }
+      });
+      comments.push(newComment);
+    }
+
+    for (const u of commentChildrenData) {
+        await prisma.commentModel.create({
+          data: {
+            content: u.content,
+            authorId: userSecond.id,
+            postId: post.id,
+            parentId: comments[0].id as number,
+          }
+  });
+    }
+  }
+  console.log(`!!! Created post comments !!!`);
+  // END create data post comments
   console.log(`Seeding finished.`);
 }
 
