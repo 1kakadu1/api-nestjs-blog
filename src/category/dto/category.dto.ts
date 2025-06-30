@@ -50,8 +50,8 @@ export class CategoryDtoResponse{
 
     toJSON(): {data: TCategoryDtoResponse[], total: number}{
         return{
-            data: this.data.map((item)=> new CategoryDtoPublic(item).toJSON()),
-            total: this.total
+          data: this.data.map((item)=> new CategoryDtoPublic(item).toJSON()),
+          total: this.total
         }
     }
 }

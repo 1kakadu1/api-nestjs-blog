@@ -1,40 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IPostSmallDto, IPostDto, TPostAuthor, TPostComments, TPostSeo } from "../interface/posts.interface";
-
-export class PostSmallDto implements IPostSmallDto{
-    @ApiProperty()
-    id: number;
-    @ApiProperty()
-    title: string;
-    @ApiProperty()
-    description: string;
-    @ApiProperty()
-    smallDescription: string;
-    @ApiProperty()
-    slug: string;
-    @ApiProperty()
-    isPopular: boolean;
-
-    constructor(params: IPostSmallDto){
-        this.id = params.id;
-        this.title = params.title;
-        this.description = params.description;
-        this.smallDescription = params.smallDescription;
-        this.slug = params.slug;
-        this.isPopular = params.isPopular;
-    }
-
-    toJSON(){
-        return{
-            id: this.id,
-            title: this.title,
-            description: this.description,
-            smallDescription: this.smallDescription,
-            slug: this.slug,
-            isPopular: this.isPopular,
-        }
-    }
-}
+import { PostImage } from "@prisma/client";
+import { CategoryDtoPublic } from "src/category/dto/category.dto";
+import { TCategoryDto, TCategoryDtoResponse } from "src/category/interface/category.interface";
 
 export class PostAuthorDto implements TPostAuthor{
     @ApiProperty()
@@ -126,6 +94,52 @@ export class PostCommentDto implements TPostComments{
         }
     }
 }
+export class PostImageDto implements PostImage{
+    @ApiProperty()
+    id: number;
+    @ApiProperty()
+    url: string;
+    @ApiProperty()
+    alt: string;
+}
+
+export class PostSmallDto implements IPostSmallDto{
+    @ApiProperty()
+    title: string;
+    @ApiProperty()
+    smallDescription: string;
+    @ApiProperty()
+    slug: string;
+    @ApiProperty()
+    isPopular: boolean;
+    @ApiProperty({type: PostAuthorDto})
+    author: TPostAuthor;
+    @ApiProperty({type: [PostImageDto]})
+    images: PostImage[];
+    @ApiProperty({type: [CategoryDtoPublic]})
+    categorys: TCategoryDtoResponse[];
+    constructor(params: IPostSmallDto){
+        this.title = params.title;
+        this.smallDescription = params.smallDescription;
+        this.slug = params.slug;
+        this.isPopular = params.isPopular;
+        this.author  = new PostAuthorDto(params.author).toJSON();
+        this.categorys = params.categorys.map(item => new CategoryDtoPublic(item as TCategoryDto).toJSON())
+        this.images = params.images;
+    }
+
+    toJSON(): IPostSmallDto{
+        return{
+            title: this.title,
+            smallDescription: this.smallDescription,
+            slug: this.slug,
+            isPopular: this.isPopular,
+            author: this.author,
+            images: this.images,
+            categorys: this.categorys.map((item)=> item)
+        }
+    }
+}
 
 export class PostDto implements IPostDto{
     @ApiProperty()
@@ -148,18 +162,23 @@ export class PostDto implements IPostDto{
     createdAt: Date;
     @ApiProperty()
     isPopular: boolean;
+    @ApiProperty({type: [PostImageDto]})
+    images: PostImage[];
+    @ApiProperty({type: [CategoryDtoPublic]})
+    categorys: TCategoryDtoResponse[];
 
     constructor(params: IPostDto){
         this.author  = new PostAuthorDto(params.author).toJSON();
         this.seo = params.seo ? new PostSeoDto(params.seo).toJSON() : null;
-        this.comments = this.comments.map((item)=> new PostCommentDto(item).toJSON())
-        this.id = params.id;
-        this.title = this.title;
-        this.description = this.description;
-        this.smallDescription = this.smallDescription;
-        this.slug = this.slug;
-        this.createdAt = this.createdAt;
-        this.isPopular = this.isPopular;
+        this.comments = params.comments.map((item)=> new PostCommentDto(item).toJSON())
+        this.title = params.title;
+        this.description = params.description;
+        this.smallDescription = params.smallDescription;
+        this.slug = params.slug;
+        this.createdAt = params.createdAt;
+        this.isPopular = params.isPopular;
+        this.images = params.images;
+        this.categorys = params.categorys.map(item => new CategoryDtoPublic(item as TCategoryDto).toJSON())
     }
 
     toJSON(): IPostDto{
@@ -167,14 +186,51 @@ export class PostDto implements IPostDto{
             author: this.author,
             seo: this.seo,
             comments: this.comments,
-            id: this.id,
             title: this.title,
             description: this.description,
             smallDescription: this.smallDescription,
             slug: this.slug,
             createdAt: this.createdAt,
             isPopular: this.isPopular,
+            images: this.images,
+            categorys: this.categorys
         }
     }
+
+}
+
+export class PostSmallListResponseDto {
+    @ApiProperty({type: [PostSmallDto]})
+    data: IPostSmallDto[];
+    @ApiProperty()
+    total: number
+
+    constructor(params: {data: IPostSmallDto[], total: number}){
+        this.data = params.data;
+        this.total = params.total;
+    }
+
+    toJSON(): {data: IPostSmallDto[], total: number}{
+        return{
+            data: this.data.map((item)=> new PostSmallDto(item).toJSON()),
+            total: this.total
+        }
+    }
+}
+
+export class PostResponseDto {
+    @ApiProperty({type: [PostDto]})
+    data: IPostDto;
+
+    constructor(params: {data: IPostDto, total: number}){
+        this.data = params.data;
+    }
+
+    toJSON(): {data: IPostDto}{
+        return{
+            data: this.data,
+        }
+    }
+
 
 }
